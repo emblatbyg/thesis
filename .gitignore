@@ -1,0 +1,15 @@
+#folders
+data/
+elab_data/
+liberty/
+thesis/
+YodaGS/
+
+#liberty files
+*.lib
+
+#a pptx
+*.pptx
+
+#test and logfiles
+*.txt
