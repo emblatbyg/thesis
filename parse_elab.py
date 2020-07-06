@@ -1436,86 +1436,61 @@ rx_dict_reg = {
 def process_dependencies():
     for top_module in modules:
         set_global_lists(top_module)
-        #found_dep = False
+
         for dep in top_module.dependencies:
             found_dep = False
             #print("Looking for "+dep.modulename+" in dependencies")
             modulename = dep.modulename
             #find modulename in module list
+            
             for dep_module in modules:
+                
                 if dep_module.name == modulename:
                     found_dep = True
                     dep.module_handle = dep_module
                     module_connection_list = dep_module.connection_points
+                    
                     for dependency_connection_tuple in dep.connections[0]:
-                        #print(dependency_connection_tuple)
                         cleaned_dependency_connection_point = dependency_connection_tuple[0].translate({ord(i): None for i in '\ '})
                         found = False
+                        
                         for module_connection_tuple in module_connection_list:  
+                            
                             if cleaned_dependency_connection_point == module_connection_tuple[0]:
-                                #print("Found connection point matching "+cleaned_dependency_connection)
                                 found = True
                                 cleaned_dep_connectionlist = dependency_connection_tuple[1].translate({ord(i): None for i in '}{\ '}) 
                                 cleaned_dep_connectionlist = cleaned_dep_connectionlist.split(',')
-                                #connect to module_connection_point[1] if list is that long, or just module_connection_point[0]
+                                
                                 for i in range(len(cleaned_dep_connectionlist)):
                                     if len(module_connection_tuple) > 1:
                                         i1, i2, module_connection, typeindex = find_indexes(module_connection_tuple[1][i])
                                     else: 
-                                        #print(module_connection_tuple)
+                                        
                                         i1, i2, module_connection, typeindex = find_indexes(module_connection_tuple[0])
                                     
                                     dep_handle, found_dep = search_list(dep_module.inputs, module_connection)
                                     if found_dep: 
-                                        #connectiontype = 'input'
-                                        #print("adding dep to module connection")
+                                        
                                         print("sending "+str(cleaned_dep_connectionlist[i])+" into process match")
                                         dataN, datawidth, processed_matchlist = process_match([cleaned_dep_connectionlist[i]], dep_handle, 'input', 'dep' )
                                         
-                                        #look for matching input to set as output_node
-                                        
-                                        #connect dep.module_handle input to correct input 
-                                        #if object_handle.module_handle != None:
-                                            #dep_module.inputs
                                             
                             
                                     else: 
                                         dep_handle, found_dep = search_list(dep_module.outputs, module_connection)
                                         #print(dep_connection)
                                         if found_dep:
-                                            #print("adding dep to module connection")
-                                            #connectiontype = 'output'
+                                            
                                             dataN, datawidth, processed_matchlist = process_match([cleaned_dep_connectionlist[i]], dep_handle, 'input', 'dep')
                                         else: 
                                             
-                                           # print("Connection: "+module_connection_tuple[1][i])
-                                            #print("could not find connection in inputs or outputs of dep: "+dep_module.name)
                                             print("Did not find dep "+dep_module.name)
-                                            #print_list_names(dep_module.outputs)
-                                            #print_list_names(dep_module.inputs)
+                                           
                         
                         #DEP NOT FOUND IN MODULES, MAYBE HINST
                         if found == False:
                             dep.possible_HINST = True
-                            #print("Did not find "+cleaned_dependency_connection)
-                            #pass
-                        #dep_handle, found_bool = search_list(mod.inputs, clean_connection)
 
-                        
-                        #if found_bool:
-                        #    #it is input to module, add to connection of rhs connection objects
-                        #    #print("Found "+connection[0]+" in inputs. Trying to add")
-                        #    dataN, datawidth, processed_matchlist = process_match([connection[1]], dep_handle, 'input', 'dep' )
-                        #else:
-                        #    dep_handle, found_bool = search_list(mod.outputs, clean_connection)
-                        #    if found_bool:
-                        #        #print("Found "+connection[0]+" in inputs. Trying to add")
-                        #        #add connection as outputs¨
-                        #        dataN, datawidth, processed_matchlist = process_match([connection[1]], dep_handle, 'output', 'dep' )
-                        #    #print("found connection "+connection[0]+" in outputs")
-                        #if found_bool == False:
-                        #    print("Did not find "+str(clean_connection)+" in in or outputs of module"+ mod.name)
-                        #    print_list_names(mod.inputs)
             if found_dep == False:
                 print("Did not find dep: "+dep.modulename)                  
         top_module.set_lists()
@@ -1531,19 +1506,16 @@ def print_list_names(l):
 #go structure heads and make structure trees
 def connect_structure(module):
     global top_level_parents
-    #i = 0
+
     for inp in module.inputs:
-        #print(i)
-        #i = 0
-        #print(inp.name)
+
         for nl in range(len(inp.connection_nodes)):
             for n in range(len(inp.connection_nodes[nl])):
                 #print(str(nl)+" "+str(n))
                 structure_handle = structure(None, inp, nl)
                 top_level_parents.append(structure_handle)
                 connect_children(structure_handle,nl,n)
-        #structure_handle.print()
-        #print()
+        
     for m in modules: 
         for reg in m.regs:
             #print(reg.name)
@@ -1551,46 +1523,18 @@ def connect_structure(module):
             top_level_parents.append(structure_handle)
             connect_children(structure_handle, 0, 0)
 
-    #for parent in top_level_parents:
-    #    #if to manage when file to large
-    #    #if parent.represented_object_handle.id == 'reg': 
-    #    #    return
-    #    print(parent.represented_object_handle.name)
-    #    parent.print()
-    #    print()
-    #    #pass
               
 #recursively connects all children to a parent and expand structure tree
 def connect_children(parent, i1,i2):
     object_handle = parent.represented_object_handle
 
-    #why this i1?
     i1 = parent.i1
-    #if(i2>= 0):
-        #print("parent: "+object_handle.id + " "+object_handle.name)
-        #print("i1: "+str(i1)+" i2: "+str(i2))
+    
     if object_handle.id != 'input' and object_handle.id != 'output':
-        #Attempt to control loops?
-        #if object_handle.structurecount > 2:
-        #    if object_handle.id == 'gtech_or2' or object_handle.id == 'gtech_and2' or object_handle.id == 'gtech_xor2':
-        #        return
-        #if object_handle.structurecount > 1:
-        #    if object_handle.id == 'gtech_not' or object_handle.id == 'gtech_buf':
-        #        return
-        #if object_handle.structurecount > 120:
-        #    print(object_handle.name+"\tstructure count: "+str(object_handle.structurecount))
+
         datawidth_set = {'sub_op','select_op', 'mux_op', 'shift_op', 'add_op', 'mult_op', 'comp_op', 'div_op', 'b_shift_op', 'shift_add_op'}
 
         object_handle.structurecount = object_handle.structurecount+1
-        #if object_handle.id in datawidth_set:
-        #    if object_handle.id != 'mux_op' and object_handle.id != 'select_op':
-        #        if object_handle.structurecount > object_handle.z_width*32:
-        #            print(object_handle.name+" structure count "+str(object_handle.structurecount))
-        #            return
-        #    else:
-        #        if object_handle.structurecount > object_handle.datawidth*32:
-        #            print(object_handle.name+" structure count "+str(object_handle.structurecount))
-        #            return
 
     global top_level_parents
     #print("Current object: "+object_handle.name)
@@ -1601,10 +1545,7 @@ def connect_children(parent, i1,i2):
     if object_handle.id == 'output':
         output_nodes = []
     elif object_handle.id == 'reg':
-        #if parent.parent == None or parent == None:
-            #if register is taken here
-            #top_level_parents.append(parent)
-        #print("found reg")
+
         if object_handle.output_structure_taken == False:
             output_nodes_q = object_handle.output_nodes_q
             output_nodes_qn = object_handle.output_nodes_qn
@@ -1613,76 +1554,39 @@ def connect_children(parent, i1,i2):
         if parent != None:# and parent.connected_inputs[0] != None:
             if parent.parent != None:
                 object_handle.has_parent = True
-        #else:
-        #    
-        #    #print(output_nodes_q)
+        
     elif object_handle.id == 'input':
-        #print()
-        #print(object_handle.name)
-        #print("\nConnection_nodes:\t", end = '')
-        #print(object_handle.connection_nodes)
-        #print(i1)
-        #print(i2)
-        #print(object_handle.widthoffset)
+
         output_nodes.append(object_handle.connection_nodes[i1][i2])
-        #print("appending input connection ")
-        #print("i1: "+str(i1))
-        #print("i2: "+str(i2))
+
     elif object_handle.id == 'comp_op':
         output_nodes = object_handle.output_nodes
     else:
-        #print(i1)
-        #print(object_handle.id)
-        #if(object_handle.id == 'comp_op'):
-        #    print(object_handle.z_width)
-        #    print(object_handle.output_nodes)
-        #print(i1)
-        #print(object_handle.name)
-        #print(object_handle.output_nodes)
-        #print(len(object_handle.output_nodes))
+
         output_nodes = [object_handle.output_nodes[i1]]
 
         #ADDED to shorten recursion
         object_handle.output_nodes[i1] = parent
     #print(output_nodes)
     for node in output_nodes:
-            #print(object_handle.id+" "+object_handle.name)
-        #print(node)
+            
         if node != None:
             if node.id == 'structure':
-                #parent.children.append(node)
-                #if node.represented_object_handle == parent.represented_object_handle:
+
                 parent = node
-                #for c in node.children:
-                #    parent.add_child(c)
-                #parent.structure_type = node.structure_type
-                #parent.structure_connection_characteristic = node.structure_connection_characteristic
-                #parent.powerStructure = node.powerStructure
-                #set parent to be node:
-                #parent = node
+
                 return
             elif(node != None):
-                #print(output_nodes)
-                #print(object_handle.name)
-                #if(object_handle.id == 'mux_op'): 
-                #print(object_handle.output_nodes)
-                #object_handle.output_nodes[0].print()
+
                 for con in node.connected_inputs:
                     child_handle = con[0]
                     
-                    #print("\tParent: "+object_handle.name)
-                    #print("\tChild: "+child_handle.name)
-                    #print(con)
                     structure_handle = structure(parent, child_handle, con[4])
                     added = parent.add_child(structure_handle)
                     if added:
                         structure_handle.structure_type = child_handle.id
                         structure_handle.structure_connection_characteristic = con[3]
-                        #if(child_handle ==object_handle): print("oh no")
-                        #if(i2>=0):
-                            #print(con)
-                            #print(node.i1)
-                            #print(node.i2)
+
                         if con[2] == 'reg' and con[2] != 'control':
                             con[0].has_parent = True
                         if structure_handle.represented_object_handle.id != 'reg' and structure_handle.represented_object_handle.id != 'input':
@@ -1693,27 +1597,14 @@ def connect_children(parent, i1,i2):
                             #if input i2 needs to be set correctly
                             connect_children(structure_handle,con[4],con[5])#node.i2)
         else:
-            pass #but probably should do something
-            #print("None-connection to output of: "+object_handle.id)
+            pass 
     for node in output_nodes_q:
-        #print(object_handle.id)
-        #print(node)
-        
 
         if(node != None):
 
-            #if node.id == 'structure':
-            #    #parent.children.append(node)
-            #    #if node.represented_object_handle == parent.represented_object_handle:
-            #    parent = node
-            #    return
-
             for con in node.connected_inputs:
                 child_handle = con[0]
-                #print(con)
-                #print(child_handle.name)
-                #remove if if registers are to be part of this
-                #if(child_handle.id != 'reg'): 
+
                 structure_handle = structure(parent, child_handle, con[4])
                 added = parent.add_child(structure_handle)
                 if added:
@@ -1727,16 +1618,11 @@ def connect_children(parent, i1,i2):
                         connect_children(structure_handle, con[4],node.i2)
                     elif(con[2] == 'input'):
                         connect_children(structure_handle,con[4],con[5])
-                #if con[2] == 'reg':
-                #    con[0].has_parent = True
+
     for node in output_nodes_qn:
-        #print(object_handle.id)
-        #print(node)
         if(node != None):
 
             if node.id == 'structure':
-                #parent.children.append(node)
-                #if node.represented_object_handle == parent.represented_object_handle:
                 parent = node
 
                 return
@@ -1758,9 +1644,7 @@ def connect_children(parent, i1,i2):
                     elif(con[2] == 'input'):
                         connect_children(structure_handle,con[4],con[5])
                     
-                #if con[2] == 'reg':
-                #    con[0].has_parent = True
-    #print("}")
+                
 
 #structure tree class
 class structure:
@@ -1773,10 +1657,7 @@ class structure:
         self.represented_object_handle = represented_object_handle
         self.i1 = i1
         self.powerStructure = None
-        #if self.represented_object_handle.id != 'reg' and self.represented_object_handle.id != 'input':
-        #    represented_object_handle.output_nodes[0] = self
     def add_child(self, child):
-        #foundchild = False
         if child.represented_object_handle == self.represented_object_handle:
                 return False
         for c in self.children:
@@ -1785,18 +1666,13 @@ class structure:
         self.children.append(child)
         return True
     def print(self):
-        #print(self.represented_object_handle.id+", ",end = '')
         if self.children != []: print("{", end = '')
         for child in self.children:
-            #print(self.represented_object_handle.id+", ",end = '')
-            #print( )
-            #print(child.represented_object_handle.id+" "+child.represented_object_handle.name+" ,",end = '')
             print(child.represented_object_handle.id+" ,",end = '')
             child.print()
         
         if self.children != []: print("}", end = '')
-        #for child in self.children:
-        #    child.print()
+
     def __repr__(self, level=0):
         ret = "\t"*level+repr(self.represented_object_handle.id)+"\n"
         if level < 11:
@@ -1809,7 +1685,6 @@ def run_parse_elab(filename):
     parse_file(filename)
     for m in modules:
         m.set_connection_points()
-    #top_level_parents = []
     process_dependencies()
 
     connect_structure(modules[0])

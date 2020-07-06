@@ -15,10 +15,6 @@ path_to_calibration_file = sys.argv[2]
 cells = ''
 processed_library_path = "powerlib.txt"
 
-#oneLogic_set = {"and2", "and3", "and4", "ao22", "ckand2", "cknand2", }
-
-# input A1 or I (CP, E, S I0, I1, TE)
-# output Z, Q, QN, ZN
 input_set = {"A1", "I", "S", "I0", "TE", "CI", "CO", "A", "CDN", "D", "SDN"}
 output_set = {"Z", "ZN", "Q", "QN", "ZN"}
 
@@ -38,15 +34,14 @@ def set_cells_and_environment(libfile):
     fp = open(processed_library_path, "w")
     fp.write(jsonstring+"\n")
     for cell in cells:
-        #print("Working")
+        
         dynamic_current = cell.get_groups("dynamic_current")
         leakage_power   = cell.get_groups("leakage_power")
         pins            = cell.get_groups("pin")
         cellName = str(cell.args[0])
         occurences_in_calibration_file = count_occurence(cellName)
         leakagePower = str(leakage_power[-1].get("value"))
-        #print("\tCell: "+str(cell.args))
-        #print("\t\tleakage power value: "+str(leakagePower))
+        
         footprint = cell.get("cell_footprint")
 
         #pinLists = []
@@ -96,8 +91,7 @@ def set_cells_and_environment(libfile):
                             if str(fall_i1[0][timeIndex]) == "0.46":
                                 fall_values_i = fall_values[timeIndex]
                                 break
-                        #for f in fall_values_i:
-                        #    f = float(f)    
+                           
                         fall_values_i = fall_values_i.tolist()
                     if rise_arg != "scalar":
                         rise_cap_np = risePwrGroup.get_array("index_2")
@@ -107,8 +101,7 @@ def set_cells_and_environment(libfile):
                             if str(rise_i1[0][timeIndex]) == "0.46":
                                 rise_values_i = rise_values[timeIndex]
                                 break
-                        #for r in rise_values_i:
-                        #    r = float(r)
+                        
                         rise_values_i = rise_values_i.tolist()
                     if rise_arg != 'scalar' and fall_arg != 'scalar':
                         powersum_list = sum_list(rise_values_i, fall_values_i)
@@ -144,10 +137,7 @@ def set_cells_and_environment(libfile):
                         #both scalar
                         powersum_list = [float(0)]
 
-                # only append to list if desired pins
-                # input A1 or I (CP, E, S I0, I1, TE)
-                # output Z, Q, QN, ZN
-                # only look at desired related pins: A1 or I ? 
+                
                 related_pin = str(related_pin).replace("\"","")
                 when = str(when).replace("\"","")
                 #make one for scalar as well so not that many empty lists?
@@ -183,8 +173,7 @@ def get_cells(filename):
             #json loads on line to get all variables
             decoded_cell_line = json.loads(line)
             cell_list.append(decoded_cell_line)
-            #print(decoded_cell_line[0])
-            #print(decoded_cell_line[1]) #footprint
+            
             line = svfile.readline()
     return cell_list
 
@@ -214,9 +203,7 @@ def sort_cells(processed_library_path):
     cellLib.combination_cells.append(adder)
     comp = cell_group(['comp_op'], 'comp')
     cellLib.combination_cells.append(comp)
-    #selectoption = cellLib.find('ao22')
-    #select = cell_group(['select_op'], 'select')
-    #cellLib.combination_cells.append(select)
+   
     
     mult = cell_group( ['mult_op'], 'mult')
     cellLib.combination_cells.append(mult)
@@ -353,8 +340,7 @@ class cell_group:
             print(c.name+", ", end='')
         print()
         print(self.weights)
-#set_cells()
-#get_cells()
+
 
 def get_dict_N(N):
     if N == 1:
@@ -529,7 +515,6 @@ def count_occurence(word):
     f = fp.read()
     return f.count(word)
 
-#sort_cells(processed_library_path)
 
 #make list of synthetic cells into list of cells from cell library
 def transform_list(cell_lib, to_transform):
@@ -551,13 +536,8 @@ def transform_list(cell_lib, to_transform):
         for r in selindexes:
             ind.append(r)
             templist[r[0]] = 0
-        #print("found regindex")
-    #for ind in regindexes:
-    #    # make new list? or what... length of sequences vary.... 
-    #    # gonna fuck up if i start modifying original
-    #    #okey with muxes and registers but not with logic
-    #    to_transform[ind[0]:ind[1]]
-    #look for muxes
+     
+    
     muxindexes = find_sequence(templist, cell_lib.muxes[0])
     #for mux in muxindexes:
     if muxindexes != []: 
@@ -570,7 +550,7 @@ def transform_list(cell_lib, to_transform):
         if indexes != []: 
                 for k in indexes:
                     ind.append(k)
-                #print(indexes)
+                
                 #print("Found "+str(element.synthetic_gate_list)+" in "+str(to_transform))
                 for ii in indexes:
                     for r in range(ii[0], ii[1]):
@@ -579,7 +559,6 @@ def transform_list(cell_lib, to_transform):
                         templist[r] = 0
     #look through lists looking for matches to replace sequences
     while i != 0:
-        #print(i)
         l = cell_lib.get_list(i)
         #print("called cell_lib.get_list "+str(i))
         #go through dict with that many inputs:
@@ -587,27 +566,25 @@ def transform_list(cell_lib, to_transform):
         for element in l:
             #print("looking for "+str(element.synthetic_gate_list)+" in "+str(to_transform))
             indexes = find_sequence(templist, element) #need element as well in list, not only indexes
-            #print("syn_gate_list")
-            #print(element.synthetic_gate_list)
+            
             if indexes != []: 
                 for k in indexes:
                     ind.append(k)
-                #print(indexes)
                 #print("Found "+str(element.synthetic_gate_list)+" in "+str(to_transform))
                 for ii in indexes:
                     for r in range(ii[0], ii[1]):
-                        #print(r)
+                        
                         templist[r] = 0
-                        #templist.pop(r)
+                        
         i = i-1
     #replace found indexes when they are found so they cannot be found again
     ind.sort()
     elementlist = []
-    #print(ind)
+    
     for indexelement in ind:
-        #print(i[0][2].matching_key)
+        
         elementlist.append(indexelement[2])
-    #print(elementlist)
+    
     return elementlist
 
 # returns none if indexes not in list or list of (startindex, stopindex) for each occurence
@@ -616,15 +593,11 @@ def find_sequence(to_find, element):
     l = element.synthetic_gate_list
     indexes = []
     temp = list(to_find)
-    #print("list from structure: "+str(to_find))
-    #print("looking for: "+str(l))
-    #print("looking for l: "+str(l))
+    
     for i in range(len(temp)):
-        #print(to_find[i:i+len(l)])
+        
         if temp[i:i+len(l)] == l:
             temp[i:i+len(l)] = [0]*len(l)
-            #print(l[i:i+len(to_find)])
-            #print("found: "+str(l))
-            #print(to_find[i:i+len(l)])
+            
             indexes.append((i, i+len(l), element))
     return indexes

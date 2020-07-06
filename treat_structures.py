@@ -1,5 +1,4 @@
 import parse_elab
-#import count_gates
 import liberty_data
 import sys 
 
@@ -7,44 +6,27 @@ filename = sys.argv[1]
 
 
 
-#print(modules[0].name)
-#liberty_data.set_cells_and_environment()
+
 #list of all cells from the cell library
 cellLib = liberty_data.sort_cells(liberty_data.processed_library_path)
 
-#print(cells[0])
+
 powerStructures = []
 
 #iterate through structures
 def go_through_structures():
     modules, top_structures = parse_elab.run_parse_elab(filename)
     for s in top_structures:
-        #iterate through structure
-        #s.print()
-        #print()
-        #when sequence of structure elements without fanout, save in variable until fanout
-        #l = [s.structure_type]
-        #print("calling from top")
-        #l = [s.represented_object_handle.id]
-        #st = liberty_data.transform_list(cellLib,l)
-        #if s.represented_object_handle == 'reg' and s.represented_object_handle.has_parent == False:
-        #    pass
-        #else:
+       
         p = power_structure(s)
         p.parent = None
         p.name = s.represented_object_handle.name
         powerStructures.append(p)
-        #print()
+        
         elementlist = liberty_data.transform_list(cellLib,[s.represented_object_handle.id])
         p.cell_lib_list = elementlist
         p.structural_rep_list = [s]
-        #print(s.represented_object_handle.name)
-        #print(s.represented_object_handle.id+" ",end='')
-        #s.print()
-        #print()
-        #p.print()
-        #print()
-        #pass
+        
         srepr = repr(s)
         print(s.represented_object_handle.name)
         print(srepr)
@@ -60,22 +42,7 @@ def go_through_structures():
         r = repr(p)
         print(r)
     print_powercount()
-    #print_stuff(top_structures)
-#compare with lists in cellib starting with the longest sequences and then shortening down
-
-#replace gates with match if found
-
-#recursive function: append to list as long as # children = 1
-#return handle to structure object that has next fanout
-# go recursively while there is children.
-# every time there is fanout, need to return and handle list
-# replace lists in structure?
-# 
-
-# While children:
-# for each child:
-# go through structure and append structure type to list until fanout 
-# return list and handle to structure with more children
+    
 def print_stuff(top_structures):
     for s in top_structures:
         print("Top structure: ")
@@ -161,11 +128,7 @@ def add_structure(l, structure_list, s, s_list):
         #no child 
         return None
     else:
-        #append to structure children?
-        #return handle to structure with fanout and list appended to recursively
-        #only returning most recent s.... not all structure paths will be included.
-        #recursive call to add structure do not save s.
-        #s_list has all info, not s.
+        
         s_list.append(s)
         return s
 
@@ -174,9 +137,9 @@ def add_structure(l, structure_list, s, s_list):
 class power_structure:
     name = ''
     countedBool = False
-    def __init__(self, parent):#, structural_rep_list, cell_lib_list):
-        self.structural_rep_list    = []#structural_rep_list
-        self.cell_lib_list          = []#cell_lib_list
+    def __init__(self, parent):
+        self.structural_rep_list    = []
+        self.cell_lib_list          = []
         self.children               = []
         self.parent                 = parent
     #def printstart(self):
@@ -284,26 +247,18 @@ def count_powerStructure(s):
                 strlist2.append(obj)
         s.countedBool = True
         for cellindex in range(0,len(s.cell_lib_list)):
-            #print(s.cell_lib_list)
-            #for c in s.cell_lib_list:
-            #    print(c.matching_key)
+            
             cell = s.cell_lib_list[cellindex]
-            #print("new cellindex:")
-            #print(cell.matching_key)
-            #print(len(s.cell_lib_list))
-            #print(str_rep_offset)
-            #print(cellindex)
+            
             structure = strlist2[cellindex+str_rep_offset]
             handle = structure.represented_object_handle
-            #print(structure)
-            #print(handle.id)
 
             handle = structure.represented_object_handle
 
             str_rep_offset = str_rep_offset + len(cell.synthetic_gate_list)-1
 
-            if handle.id == 'reg' :#and structure.structure_connection_characteristic != 'control':
-                #if handle.output_nodes_q[0] != None or handle.output_nodes_qn[0] != None:
+            if handle.id == 'reg' :
+                
                 if handle.has_parent:
                     if cell.matching_key in regstruct and cellindex < 1:
                             regs = regs +1
