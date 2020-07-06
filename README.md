@@ -15,4 +15,4 @@ Some extra scripts were also made to process information
 * **getModule.sh** goes through larger elaborated or synthesised files and retrieves a chosen top-module and all of its dependencies and stores them in a file.
 * **count\_gates.py** counts cells in a synthesised file to compare it to count in elaborated file
 
-The literary review done on different methods for **RTL** power estimation can be found in the file **Power\_Modeling\_of\_Complex\_Designs.pdf**
+The literary review done on different methods for **RTL** power estimation can be found in the file **literature\_review\_RTL\_power\_estimation.pdf**
